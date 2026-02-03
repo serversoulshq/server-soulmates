@@ -45,6 +45,25 @@ app.get("/match", (req, res) => {
   });
 });
 
+app.get("/admin-secret-soulmates", (req, res) => {
+  db.all("SELECT * FROM users", (err, users) => {
+    if (err) {
+      res.send("Database error 💔");
+      return;
+    }
+
+    let html = "<h1>💘 Soulmate Entries</h1><ul>";
+
+    users.forEach(u => {
+      html += `<li>${u.name} — ${u.gender} → ${u.preference}</li>`;
+    });
+
+    html += "</ul>";
+
+    res.send(html);
+  });
+});
+
 app.listen(PORT, () => {
   console.log("server ♡ soulmates is running");
 });
