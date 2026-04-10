@@ -443,6 +443,8 @@
 
   // ── Google OAuth ──────────────────────────────────────────────
   async function signInWithGoogle() {
+    sb.auth.signOut();
+    
     const btn = document.getElementById('googleBtn');
     btn.textContent = 'Redirecting...';
     btn.disabled = true;
@@ -451,6 +453,7 @@
       provider: 'google',
       options: {
         redirectTo: window.location.href,
+        prompt: 'select_account'
         // After redirect, we check the email domain (see onAuthStateChange below)
       }
     });
