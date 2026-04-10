@@ -442,41 +442,57 @@
   }
 
   // ── Google OAuth ──────────────────────────────────────────────
-  async function signInWithGoogle() {
-    const btn = document.getElementById('googleBtn');
-    btn.textContent = 'Redirecting...';
-    btn.disabled = true;
+async function signInWithGoogle() {
+  const btn = document.getElementById('googleBtn');
+  btn.textContent = 'Redirecting...';
+  btn.disabled = true;
 
-    const { error } = await sb.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.href,
-        // After redirect, we check the email domain (see onAuthStateChange below)
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: 'https://serversoulmates.onrender.com/',
+      queryParams: {
+        prompt: 'select_account'
       }
-    });
-
-    if (error) {
-      alert('Google sign-in failed: ' + error.message);
-      btn.textContent = 'Continue with Google';
-      btn.disabled = false;
-    }
-  }
-
-  // ── Listen for Google redirect coming back ────────────────────
-  sb.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-      const email = session.user.email;
-      if (!isAllowed(email)) {
-        // Not a college email — sign them out immediately
-        await sb.auth.signOut();
-        alert('Access denied. Only @iiserb.ac.in email addresses are allowed.');
-        return;
-      }
-      // ✅ Valid college email via Google
-      showStep(3);
     }
   });
 
+  if (error) {
+    alert('Google sign-in failed: ' + error.message);
+    btn.textContent = 'Continue with Google';
+    btn.disabled = false;
+  }
+}
+  // ── Listen for Google redirect coming back ────────────────────
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    const email = session.user.email;
+
+    if (!isAllowed(email)) {
+      alert('Access denied. Only @iiserb.ac.in email addresses are allowed.');
+
+      await sb.auth.signOut();
+      window.history.replaceState({}, document.title, window.location.pathname);
+      window.location.href = '/login.html';
+      return;
+    }
+
+    // ✅ Check if user already onboarded
+    const { data } = await sb
+      .from('profiles')
+      .select('onboarded')
+      .eq('id', session.user.id)
+      .single();
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    if (!data?.onboarded) {
+      window.location.href = '/onboarding.html';
+    } else {
+      window.location.href = '/dashboard.html';
+    }
+  }
+});
   // ── Send OTP ──────────────────────────────────────────────────
   async function sendOtp() {
     const email = document.getElementById('emailInput').value.trim();
