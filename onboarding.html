@@ -904,17 +904,17 @@ for (let i = 0; i < photos.length; i++) {
   const filePath = `${user.id}/${Date.now()}_${i}.jpg`;
 
   const { error: uploadError } = await sb.storage
-    .from('profile-images')
+    .from('profile_images')
     .upload(filePath, file);
 
-  if (uploadError) {
-    console.error("Upload error:", uploadError);
-    alert("Image upload failed");
-    return;
-  }
+if (uploadError) {
+  console.error("UPLOAD ERROR FULL:", uploadError);
+  alert("Upload failed: " + uploadError.message);
+  return;
+}
 
   const { data: publicUrlData } = sb.storage
-    .from('profile-images')
+    .from('profile_images')
     .getPublicUrl(filePath);
 
   imageUrls.push(publicUrlData.publicUrl);
