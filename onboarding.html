@@ -873,30 +873,57 @@
     },200);
   }
 
-  async function submit(){
-    const btn=document.getElementById("nextBtn");
-    btn.textContent="Saving..."; btn.disabled=true;
-    const {data:{user}}=await sb.auth.getUser();
-    if(!user){window.location.href="login.html";return;}
-    const dob=new Date(document.getElementById("dob").value);
-    const age=Math.floor((Date.now()-dob)/(365.25*86400000));
-    const sp=document.querySelector('#promptList .prompt-card.selected');
-    const profile={
-      user_id:user.id,
-      first_name:document.getElementById("firstName").value.trim(),
-      age, gender:document.querySelector('#genderGrid .pill.selected')?.dataset.val,
-      looking_for:document.querySelector('#lookingGrid .pill.selected')?.dataset.val,
-      year:document.getElementById("year").value,
-      major:document.getElementById("major").value,
-      campus_turf:document.querySelector('#turfGrid .turf-card.selected')?.dataset.val,
-      home_state:document.getElementById("homeState").value,
-      prompt_q:sp?.querySelector('.prompt-q')?.textContent?.trim()||'',
-      prompt_a:sp?.querySelector('.prompt-ans')?.value?.trim()||'',
-    };
-    const {error}=await sb.from('participants').upsert([profile],{onConflict:'user_id'});
-    if(error){alert("Error: "+error.message);btn.textContent="Complete profile →";btn.disabled=false;return;}
-    window.location.href="dashboard.html";
+async function submit(){
+  const btn=document.getElementById("nextBtn");
+  btn.textContent="Saving..."; 
+  btn.disabled=true;
+
+  const { data:{user} } = await sb.auth.getUser();
+
+  if(!user){
+    window.location.href="login.html";
+    return;
   }
+
+  const dob=new Date(document.getElementById("dob").value);
+  const age=Math.floor((Date.now()-dob)/(365.25*86400000));
+
+  const sp=document.querySelector('#promptList .prompt-card.selected');
+
+  const profile={
+    user_id:user.id,
+    first_name:document.getElementById("firstName").value.trim(),
+    age,
+    gender:document.querySelector('#genderGrid .pill.selected')?.dataset.val,
+    looking_for:document.querySelector('#lookingGrid .pill.selected')?.dataset.val,
+    year:document.getElementById("year").value,
+    major:document.getElementById("major").value,
+    campus_turf:document.querySelector('#turfGrid .turf-card.selected')?.dataset.val,
+    home_state:document.getElementById("homeState").value,
+    prompt_q:sp?.querySelector('.prompt-q')?.textContent?.trim()||'',
+    prompt_a:sp?.querySelector('.prompt-ans')?.value?.trim()||'',
+  };
+
+  // 🔥 ADD DEBUG HERE
+  console.log("AUTH USER:", user);
+  console.log("AUTH UID:", user.id);
+  console.log("PROFILE USER_ID:", profile.user_id);
+
+  // 🔥 THEN YOUR INSERT
+  const {error}=await sb
+    .from('participants')
+    .upsert([profile],{onConflict:'user_id'});
+
+  if(error){
+    console.error("RLS ERROR:", error);
+    alert("Error: "+error.message);
+    btn.textContent="Complete profile →";
+    btn.disabled=false;
+    return;
+  }
+
+  window.location.href="dashboard.html";
+}
 
   init();
 </script>
