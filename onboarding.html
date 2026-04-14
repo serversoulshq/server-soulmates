@@ -890,6 +890,36 @@ async function submit(){
 
   const sp=document.querySelector('#promptList .prompt-card.selected');
 
+// 🔥 UPLOAD IMAGES FIRST
+const imageUrls = [];
+
+for (let i = 0; i < photos.length; i++) {
+  if (!photos[i]) {
+    imageUrls.push(null);
+    continue;
+  }
+
+  const file = photos[i].file;
+
+  const filePath = `${user.id}/${Date.now()}_${i}.jpg`;
+
+  const { error: uploadError } = await sb.storage
+    .from('profile-images')
+    .upload(filePath, file);
+
+  if (uploadError) {
+    console.error("Upload error:", uploadError);
+    alert("Image upload failed");
+    return;
+  }
+
+  const { data: publicUrlData } = sb.storage
+    .from('profile-images')
+    .getPublicUrl(filePath);
+
+  imageUrls.push(publicUrlData.publicUrl);
+}
+  
   const profile={
     user_id:user.id,
     first_name:document.getElementById("firstName").value.trim(),
@@ -902,6 +932,9 @@ async function submit(){
     home_state:document.getElementById("homeState").value,
     prompt_q:sp?.querySelector('.prompt-q')?.textContent?.trim()||'',
     prompt_a:sp?.querySelector('.prompt-ans')?.value?.trim()||'',
+    image_1: imageUrls[0],
+    image_2: imageUrls[1],
+    image_3: imageUrls[2]
   };
 
   // 🔥 ADD DEBUG HERE
