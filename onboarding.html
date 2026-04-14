@@ -743,18 +743,16 @@
 </div><!-- /layout -->
 <script src="/app.js"></script>
 <script>
-  const SUPABASE_URL = "https://yrrytfnfklqlmtsgpcvi.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlycnl0Zm5ma2xxbG10c2dwY3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NDY1ODUsImV4cCI6MjA5MTIyMjU4NX0.wBPIR3x-b6rig0a32kdH6CwpszEKNj6qXZvrKGwKhWU";
-  const { createClient } = supabase;
-  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
   let cur = 1;
   const TOTAL = 4;
   let photos = [null,null,null];
 
   async function init() {
-    const { data:{user} } = await sb.auth.getUser();
-    if (!user) { window.location.href="login.html"; return; }
+    // We now use app.js to check authentication securely
+    const token = await requireAuth();
+    if (!token) return; 
+    
+    // This hides the spinner!
     document.getElementById("authGuard").style.display="none";
 
     // DOB limits: must be 18–35 years old (blocks trolling with year 1900 etc.)
